@@ -1,9 +1,9 @@
 import torch
 import torchvision
 
-rootpath = 'D:\GitHub\pytorchfi\dataset\ImageNet'
+rootpath = 'D:\GitHub\pytorchfi\dataset\CIFAR10'
 
-data=torchvision.datasets.ImageNet(
+data=torchvision.datasets.CIFAR10(
     root=rootpath,
     train=True,
     download=True,
