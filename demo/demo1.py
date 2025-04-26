@@ -1,8 +1,8 @@
 import torch
 import torchvision.models as models
 from torchvision.models import AlexNet_Weights
-
 from pytorchfi.core import FaultInjection as fault_injection
+
 
 # 检查是否有可用的 GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
