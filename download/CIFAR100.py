@@ -1,8 +1,10 @@
 import torch
 import torchvision
+import mysys
+import os
+rootpath = os.path.join(mysys.datasetsPath,'CIFAR100')
 
-
-def loadDataSet(rootpath = 'D:\GitHub\pytorchfi\dataset\CIFAR100'):
+def loadDataSet(rootpath):
 
     data=torchvision.datasets.CIFAR10(
         root=rootpath,
@@ -18,4 +20,4 @@ def loadDataSet(rootpath = 'D:\GitHub\pytorchfi\dataset\CIFAR100'):
     return data_loader, data.classes, data
 
 if __name__=='__main__':
-    loadDataSet()
+    loadDataSet(rootpath)

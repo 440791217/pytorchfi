@@ -1,3 +1,4 @@
+#故障注入
 import torch
 import torchvision.models as models
 from torchvision.models import AlexNet_Weights
