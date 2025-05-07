@@ -65,7 +65,7 @@ class MobileNetV1(nn.Module):
 
     def forward(self, x):
         return self.model(x)
-    
+
 # 定义评估函数
 def evaluate(model, val_loader, device):
     correct = 0
@@ -97,22 +97,37 @@ def train():
     train_loader, val_loader = ImageNetLoader.loader(root=root)
     # 初始化模型
     model = MobileNetV1()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda")
     model.to(device)
 
     # 定义损失函数和优化器
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    base_lr = 0.001
+    high_lr = base_lr*10
+    low_lr = base_lr
+    optimizer = optim.SGD(model.parameters(), lr=base_lr, momentum=0.9)
 
-    # 检查是否有之前保存的检查点
     checkpoint_path = os.path.join(mysys.modelsPath, 'MobileNetV1', 'checkpoint.pth')
     start_epoch = 0
+    prev_loss = None
     if os.path.exists(checkpoint_path):
+        print("Found existing model. Loading model parameters...")
         checkpoint = torch.load(checkpoint_path)
+        # 从checkpoint中提取模型的状态字典
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         start_epoch = checkpoint['epoch']
+        prev_loss = checkpoint.get('prev_loss')
         print(f"Resuming training from epoch {start_epoch + 1}")
+        if prev_loss is not None:
+            print(f"Previous training loss: {prev_loss}")
+        #计算并打印准确率
+        model.eval()
+        initial_accuracy = evaluate(model, val_loader, device)
+        print(f"Initial accuracy before training: {initial_accuracy}%")
+    else:
+        print("No existing model found. Starting training from scratch.")
 
     # 训练模型
     num_epochs = 300
@@ -135,18 +150,34 @@ def train():
                 pbar.set_postfix({'Loss': loss.item()})
                 pbar.update(1)
 
-        print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {running_loss / len(train_loader)}')
+        epoch_loss = running_loss / len(train_loader)
+        print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {epoch_loss}')
 
+        # 根据损失值调整学习率
+        if epoch_loss > 0.5:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = high_lr
+        else:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = low_lr
+
+        print(f"Current learning rate: {optimizer.param_groups[0]['lr']}")
+        #计算并打印准确率
+        model.eval()
+        initial_accuracy = evaluate(model, val_loader, device)
+        print(f"Initial accuracy before training: {initial_accuracy}%")
         # 保存检查点
         checkpoint = {
             'epoch': epoch + 1,
             'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict()
+            'optimizer_state_dict': optimizer.state_dict(),
+            'prev_loss': epoch_loss
         }
         checkpoint_dir = os.path.join(mysys.modelsPath, 'MobileNetV1')
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
         torch.save(checkpoint, os.path.join(checkpoint_dir, 'checkpoint.pth'))
+        torch.save(checkpoint, os.path.join(checkpoint_dir, 'checkpoint_[]_{}_{}.pth'.format(initial_accuracy,epoch_loss,epoch)))
         print(f"Checkpoint saved at epoch {epoch + 1}")
 
     end_time = datetime.datetime.now()
@@ -192,4 +223,3 @@ def eval():
 if __name__ == '__main__':
     train()
     # eval()
-    

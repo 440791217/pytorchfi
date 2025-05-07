@@ -7,7 +7,7 @@ from torchvision import transforms
 
 
 # 指定 ImageNet 数据集的根目录
-def loader(root):
+def loader(root,num_workers=8,batch_size=32):
     # 定义数据预处理操作
     transform = transforms.Compose([
         transforms.Resize(256),
@@ -23,8 +23,8 @@ def loader(root):
     val_dataset = torchvision.datasets.ImageNet(root=root, split='val', transform=transform)
 
     # 创建数据加载器
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True,num_workers=4)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=32, shuffle=False,num_workers=4)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True,num_workers=num_workers)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False,num_workers=num_workers)
     return  train_loader,val_loader
 
 if __name__=='__main__':
