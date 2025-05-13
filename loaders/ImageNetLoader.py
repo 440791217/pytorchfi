@@ -7,13 +7,13 @@ from torchvision import transforms
 
 
 # 指定 ImageNet 数据集的根目录
-def loader(root,num_workers=8,batch_size=32):
+def loader(root,num_workers=8,batch_size=32,resize=None,crop=None,mean=None,std=None):
     # 定义数据预处理操作
     transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
+        transforms.Resize(resize),
+        transforms.CenterCrop(crop),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=mean, std=std)
     ])
 
     # 加载训练集
@@ -23,7 +23,7 @@ def loader(root,num_workers=8,batch_size=32):
     val_dataset = torchvision.datasets.ImageNet(root=root, split='val', transform=transform)
 
     # 创建数据加载器
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True,num_workers=num_workers)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False,num_workers=num_workers)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False,num_workers=num_workers)
     return  train_loader,val_loader
 
