@@ -7,3 +7,5 @@ test/unit_tests/__init__.py*
 venv/
 datasets/
 out/
+runs/
+*.pt
